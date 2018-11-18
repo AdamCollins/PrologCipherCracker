@@ -6,5 +6,5 @@ word_in_string(W,S):-
 %Given a char C and a shift amount A, S is character C shiften A times(including looping)
 char_shift(C,A,S):-
     char_code(C,V),
-    SV is (V-97+A) mod 26 + 97.
+    SV is (V-97+A) mod 26 + 97,
     char_code(S,SV).
