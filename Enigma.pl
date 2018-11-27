@@ -41,6 +41,8 @@ reflector(Input, Output) :-
 	Input_Code_Minused is Input_Code-65,
 	nth0(Input_Code_Minused, Chars, Output).
 
+% TBD: notch implementation
+% e.g: after 26 words, rotor3 comes back into same position and rotor2 moves once forward.
 enigma_encipher(_, _, "", "").
 enigma_encipher(Visible_List, Ring_Setting_List, Input, Output) :-
 	string_chars(Input, [HI|TI]),
