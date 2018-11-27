@@ -4,8 +4,21 @@ word_in_string(W,S):-
     member(W,L).
 
 %Given a char C and a shift amount A, S is character C shiften A times(including looping)
-char_shift(C1,A,S):-
-    C2 is (C1-97+A) mod 26 + 97, %shifts C1 over by A while looping around if overflow.
+char_shift(Char1,0,Char1).
+char_shift(Char1,A,S):-
+	member(Code1, [65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90]),
+	char_code(Char1, Code1),
+    C2 is (Code1-65+A) mod 26 + 65, %shifts C1 over by A while looping around if overflow.
+    char_code(S, C2). %converts character code into char
+
+% char_shift("A", 2, A).
+% A = 'C'
+
+%Given a char C and a shift amount A, S is character C shiften A times(including looping)
+char_shift(Char1,A,S):-
+	char_code(Char1, Code1),
+	Code1 > 96, Code1 < 123,
+    C2 is (Code1-97+A) mod 26 + 97, %shifts C1 over by A while looping around if overflow.
     char_code(S, C2). %converts character code into char
 
 % char_shift("a", 2, A).
@@ -13,9 +26,9 @@ char_shift(C1,A,S):-
 
 %given a string, S1, S2 is S1 with all chars shifted by A
 string_shift(S1, A, S2):-
-    string_to_list(S1,L1),
+    string_codes(S1,L1),
     charlist_shift(L1, A, L2),
-    string_to_list(S2, L2).
+    string_codes(S2,L2).
 
 % string_shift("abcde", 1, A).
 % A = "bcdef"
