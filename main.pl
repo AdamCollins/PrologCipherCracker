@@ -26,9 +26,9 @@ char_shift(Char1,A,S):-
 
 %given a string, S1, S2 is S1 with all chars shifted by A
 string_shift(S1, A, S2):-
-    string_codes(S1,L1),
+    string_chars(S1,L1),
     charlist_shift(L1, A, L2),
-    string_codes(S2,L2).
+    string_chars(S2,L2).
 
 % string_shift("abcde", 1, A).
 % A = "bcdef"
