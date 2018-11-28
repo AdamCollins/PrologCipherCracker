@@ -1,3 +1,22 @@
+helloworld :-
+    write('Hello World!'),
+    nl.
+
+start :-
+    readhal(N),
+    write('Enter a number:'),
+    write(N),
+    isTwo(N).
+
+
+isTwo(N) :-
+    N is 2. 
+
+% adam,and, apple ape, banana
+tree(apple, tree(ape, adam, apes), banana).
+
+
+
 %Given a string S, W is a word inside of S.
 word_in_string(W,S):-
     split_string(S," ","",L),
