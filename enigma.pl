@@ -1,9 +1,10 @@
 % UBC CPSC312-2018 Functional and Logical Programming
 % Author: Junsu Shin
-% Deciphering Algorithm for Caesar Cipher
+% Enciphering Algorithm for Enigma Machine
 
 :- [main].
 
+% rotor(Int, Char, Char, Char, Char)
 rotor(Rotor_No, Visible_Char, Ring_Setting, Input, Output) :-
 	char_code(Visible_Char, Visible_Code),
 	char_code(Ring_Setting, Ring_Code),
@@ -14,6 +15,7 @@ rotor(Rotor_No, Visible_Char, Ring_Setting, Input, Output) :-
 	rotor_core(String, Input_Core, Output_Core),
 	char_shift(Output_Core, Ring_Offset-Changing_Offset, Output).
 
+% rotor(Int, Char, Char, Char, Char)
 rotor_backward(Rotor_No, Visible_Char, Ring_Setting, Input, Output) :-
 	char_code(Visible_Char, Visible_Code),
 	char_code(Ring_Setting, Ring_Code),
@@ -24,6 +26,7 @@ rotor_backward(Rotor_No, Visible_Char, Ring_Setting, Input, Output) :-
 	rotor_core(String, Input_Core, Output_Core),
 	char_shift(Input, Changing_Offset-Ring_Offset, Input_Core).
 	
+% rotor_core(String, Char, Char)
 rotor_core(String, Input, Output) :-
 	string_chars(String, Core_Charlist),
 	member(Input_Code1, [65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90]),
@@ -31,10 +34,14 @@ rotor_core(String, Input, Output) :-
 	Input_Code2 is Input_Code1-65,
 	nth0(Input_Code2, Core_Charlist, Output).
 
+% enciphering data for each rotor
 rotor_core_string(1, "EKMFLGDQVZNTOWYHXUSPAIBRCJ").
 rotor_core_string(2, "AJDKSIRUXBLHWTMCQGZNPYFVOE").
 rotor_core_string(3, "BDFHJLCPRTXVZNYEIWGAKMUSQO").
 
+% reflector panel for enigma, reflects the input into a designated output
+% input/output works both ways, therefore reflector(Output, Input) will be also true if reflector(Input, Output) is true.
+% reflector(Char Input, Char Output)
 reflector(Input, Output) :-
 	char_code(Input, Input_Code),
 	string_chars("YRUHQSLDPXNGOKMIEBFZCWVJAT", Chars),
@@ -43,6 +50,7 @@ reflector(Input, Output) :-
 
 % TBD: notch implementation
 % e.g: after 26 words, rotor3 comes back into same position and rotor2 moves once forward.
+% enigma_encipher(List<Upper_case_alphabet> Visible_List, List<Upper_case_alphabet> Visible_List, String Input, String Output)
 enigma_encipher(_, _, "", "").
 enigma_encipher(Visible_List, Ring_Setting_List, Input, Output) :-
 	string_chars(Input, [HI|TI]),
