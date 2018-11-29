@@ -121,6 +121,9 @@ hill_encipher(Key, Plain_text_list, Ciphered_text_list) :-
 % hill_decipher("hill", ["KRYM", "QMZR"], P).
 % P = ["ALGO", "OGLA"].
 
+% hill_encipher("dytu", ["fthe"], E).
+% not able to decipher, should ask users to try another key
+
 choose_Deter(D) :- member(D, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]).
 
 extract_elements(Key_matrix, A, B, C, D) :-
@@ -139,7 +142,7 @@ mod_ele(A, B, C, D, F, S, T, L) :-
 
 cal_determinant(Key_matrix, Deter) :-
   extract_elements(Key_matrix, A, B, C, D),
-  M is mod(A * C - B * D, 26),
+  M is mod(A * D - B * C, 26),
   choose_Deter(N),
   Deter is rdiv(26 * N + 1, M),
   integer(Deter).
