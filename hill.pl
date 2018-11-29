@@ -90,12 +90,20 @@ en_de_cipher(Key_matrix, Target_matrix, Result) :-
   convert_to_ciphered_text(Encoded_matrix, Ciphered_text_list),
   atomics_to_string(Ciphered_text_list, Result).
 
-% pre-condition: Key has to be a list of 4 elements which will be viewed as a 2*2 matrix
-hill_encipher(Key, Plain_text, Ciphered_text) :-
-  validate_key(Key),
-  convert_to_matrix(Key, Key_matrix),
+hill_encipher_Char(Key_matrix, Plain_text, Ciphered_text) :-
   convert_to_matrix(Plain_text, Text_matrix),
   en_de_cipher(Key_matrix, Text_matrix, Ciphered_text).
+
+hill_encipher_list(_, [], []).
+hill_encipher_list(Key_matrix, [Pl_head | Pl_tail], [Ci_head | Ci_tail]) :-
+  hill_encipher_Char(Key_matrix, Pl_head, Ci_head),
+  hill_encipher_list(Key_matrix, Pl_tail, Ci_tail).
+
+% pre-condition: Key has to be a list of 4 elements which will be viewed as a 2*2 matrix
+hill_encipher(Key, Plain_text_list, Ciphered_text_list) :-
+  validate_key(Key),
+  convert_to_matrix(Key, Key_matrix),
+  hill_encipher_list(Key_matrix, Plain_text_list, Ciphered_text_list).
 
 
 % -- not in use
@@ -107,11 +115,11 @@ hill_encipher(Key, Plain_text, Ciphered_text) :-
 % --
 
 % in use
-% hill_encipher("hill", "shorte", E).
-% E = "APADJT"
+% hill_encipher("hill", ["algo", "ogla"], E).
+% E = ["KRYM", "QMZR"].
 
-% hill_decipher("hill", "APADJT", P).
-% P = "shorte"
+% hill_decipher("hill", ["KRYM", "QMZR"], P).
+% P = ["ALGO", "OGLA"].
 
 choose_Deter(D) :- member(D, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]).
 
@@ -157,8 +165,16 @@ inverse_matrix(Key_matrix, Inverse_matrix) :-
   adj_matrix(Key_matrix, Adj_matrix),
   get_inverse(Deter, Adj_matrix, Inverse_matrix).
 
-hill_decipher(Key, Ciphered_text, Plain_text) :-
+hill_decipher_Char(Key_matrix, Ciphered_text, Plain_text) :-
+  convert_to_matrix(Ciphered_text, Text_matrix),
+  en_de_cipher(Key_matrix, Text_matrix, Plain_text).
+
+hill_decipher_list(_, [], []).
+hill_decipher_list(Key_matrix, [Ci_head | Ci_tail], [Pl_head | Pl_tail]) :-
+  hill_decipher_Char(Key_matrix, Ci_head, Pl_head),
+  hill_decipher_list(Key_matrix, Ci_tail, Pl_tail).
+
+hill_decipher(Key, Ciphered_text_list, Plain_text_list) :-
   convert_to_matrix(Key, Key_matrix),
-  convert_to_matrix(Ciphered_text, Ciphered_matrix),
   inverse_matrix(Key_matrix, Inverse_matrix),
-  en_de_cipher(Inverse_matrix, Ciphered_matrix, Plain_text).
+  hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list).
