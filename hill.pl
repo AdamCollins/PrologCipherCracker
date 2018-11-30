@@ -214,8 +214,8 @@ cal_key(Hint, Ciphered_text, Key_matrix) :-
   rotate_matrix(Hint_matrix_0, Hint_matrix),
   convert_to_matrix(Ciphered_text, Ciphered_matrix_0),
   rotate_matrix(Ciphered_matrix_0, Ciphered_matrix),
-  inverse_matrix_org(Ciphered_matrix, Inversed),
-  matrix_multi(Hint_matrix, Inversed, Key_matrix).
+  inverse_matrix_org(Hint_matrix, Inversed),
+  matrix_multi(Ciphered_matrix, Inversed, Key_matrix).
 
 
 % -- not in use
@@ -235,3 +235,8 @@ cal_key(Hint, Ciphered_text, Key_matrix) :-
 
 % hill_encipher("dytu", ["fthe"], E).
 % not able to decipher, should ask users to try another key
+
+% cal_key("thhe", "kxvz", Key).
+% Key = [[23, 17], [21, 2]].   "xrvc"
+% hill_decipher("xrvc", ["kxvz"], Plain).
+% Plain = ["THHE"] .
