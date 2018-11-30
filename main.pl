@@ -33,6 +33,8 @@ char_shift(Char1,A,S):-
 % char_shift("A", 2, A).
 % A = 'C'
 
+
+
 %Given a char C and a shift amount A, S is character C shiften A times(including looping)
 char_shift(Char1,A,S):-
 	char_code(Char1, Code1),
@@ -45,9 +47,9 @@ char_shift(Char1,A,S):-
 
 %given a string, S1, S2 is S1 with all chars shifted by A
 string_shift(S1, A, S2):-
-    string_codes(S1,L1),
+    string_chars(S1,L1),
     charlist_shift(L1, A, L2),
-    string_codes(S2,L2).
+    string_chars(S2,L2).
 
 % string_shift("abcde", 1, A).
 % A = "bcdef"

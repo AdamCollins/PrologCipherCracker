@@ -1,4 +1,4 @@
-[[% UBC CPSC312-2018 Functional and Logical Programming
+% UBC CPSC312-2018 Functional and Logical Programming
 % Author: Junsu Shin
 % Deciphering Algorithm for Caesar Cipher
 
