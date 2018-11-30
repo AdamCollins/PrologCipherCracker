@@ -139,6 +139,10 @@ cal_determinant(Key_matrix, Deter) :-
   extract_elements(Key_matrix, A, B, C, D),
   M is mod(A * D - B * C, 26),
   choose_Deter(N),
+  ( M == 0 ->
+    M is 1.1
+    ; M is M
+  ),
   Deter is rdiv(26 * N + 1, M),
   integer(Deter).
 
@@ -288,3 +292,5 @@ hill_decipher_hint(Hint, Ciphered_text) :-
 % Not able to decipher with key: NIKO
 % Result: 0
 % true .
+
+% Also works with Hint being apple, pear
