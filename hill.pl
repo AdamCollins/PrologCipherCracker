@@ -174,8 +174,12 @@ hill_decipher_list(Key_matrix, [Ci_head | Ci_tail], [Pl_head | Pl_tail]) :-
 
 hill_decipher(Key, Ciphered_text_list, Plain_text_list) :-
   convert_to_matrix(Key, Key_matrix),
-  inverse_matrix(Key_matrix, Inverse_matrix),
-  hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list).
+  ( cal_determinant(Key_matrix, _) ->
+    inverse_matrix(Key_matrix, Inverse_matrix),
+    hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list)
+    ; Plain_text_list is 0,
+      format("Not able to decipher with key: ~w~n", [Key])
+  ).
 
 
 % --- Decipher (use the Hint) ---
@@ -183,6 +187,7 @@ cal_determinant_org(Matrix, Deter) :-
   extract_elements(Matrix, A, B, C, D),
   Deter is rdiv(1, mod(A * D - B * C, 26)).
 
+% only works when determinant is 1, so not in use
 inverse_matrix_org(Matrix, Inversed) :-
   adj_matrix(Matrix, Adj_matrix),
   cal_determinant_org(Matrix, Deter),
@@ -214,9 +219,29 @@ cal_key(Hint, Ciphered_text, Key_matrix) :-
   rotate_matrix(Hint_matrix_0, Hint_matrix),
   convert_to_matrix(Ciphered_text, Ciphered_matrix_0),
   rotate_matrix(Ciphered_matrix_0, Ciphered_matrix),
-  inverse_matrix_org(Hint_matrix, Inversed),
-  matrix_multi(Ciphered_matrix, Inversed, Key_matrix).
+  ( cal_determinant(Hint_matrix, _) ->
+    inverse_matrix(Hint_matrix, Inversed),
+    matrix_multi(Ciphered_matrix, Inversed, Key_matrix)
+    ; Key_matrix is 0
+  ).
 
+search_keys(_, [], []).
+search_keys(Hint, [CiH | CiT], [Kh | Kt]) :-
+  cal_key(Hint, CiH, Key_matrix),
+  convert_to_ciphered_text(Key_matrix, Chars),
+  atomics_to_string(Chars, Kh),
+  search_keys(Hint, CiT, Kt).
+
+try_decipher([], _).
+try_decipher([KlH | KlT], Ciphered_text) :-
+  format("Decipher using key: ~w~n", [KlH]),
+  hill_decipher(KlH, Ciphered_text, Plain_text),
+  format("Result: ~w~n", [Plain_text]),
+  try_decipher(KlT, Ciphered_text).
+
+hill_decipher_hint(Hint, Ciphered_text) :-
+  search_keys(Hint, Ciphered_text, Keylist),
+  try_decipher(Keylist, Ciphered_text).
 
 % -- not in use
 % hill_encipher("abcd", "abcdefg", E).
@@ -237,6 +262,29 @@ cal_key(Hint, Ciphered_text, Key_matrix) :-
 % not able to decipher, should ask users to try another key
 
 % cal_key("thhe", "kxvz", Key).
-% Key = [[23, 17], [21, 2]].   "xrvc"
+% Key = [[23, 17], [21, 2]]. -> "xrvc"
 % hill_decipher("xrvc", ["kxvz"], Plain).
-% Plain = ["THHE"] .
+% Plain = ["THHE"].
+
+% case when key cannot be found
+% cal_key("asda", "kxvz", Key).
+% Key = 0.
+
+% decipher using hint:
+% ?- hill_encipher("xrvc", ["first", "apple", "pear", "thhe", "abcd"], Ciphered).
+% Ciphered = ["RRVDVJ", "VEMZOG", "XLDI", "KXVZ", "RCTW"].
+
+% ?- hill_decipher_hint("thhe", ["RRVDVJ", "VEMZOG", "XLDI", "KXVZ", "RCTW"]).
+% Decipher using key: ZUVQ
+% Not able to decipher with key: ZUVQ
+% Result: 0
+% Decipher using key: ADXF
+% Result: [YXCHAH,THHEAW,MZZB,VMMH,DXJP]
+% Decipher using key: TAOX
+% Result: [FJXLXJ,XCCBYG,THHE,GDXV,FOBG]
+% Decipher using key: XRVC
+% Result: [FIRSTA,APPLEA,PEAR,THHE,ABCD]
+% Decipher using key: NIKO
+% Not able to decipher with key: NIKO
+% Result: 0
+% true .
