@@ -1,6 +1,10 @@
 % Hill Cipher
+% References:
 % http://practicalcryptography.com/ciphers/classical-era/hill/
+% http://crypto.interactive-maths.com/hill-cipher.html
+% http://practicalcryptography.com/cryptanalysis/stochastic-searching/cryptanalysis-hill-cipher/
 
+% --- Encipher ---
 % make the length of Num_list an even number for matrix multiplication
 even_list(Num_list, Even_list) :-
   length(Num_list, L),
@@ -36,9 +40,16 @@ map_to_num([Chead | CTail], [Nhead | Ntail]) :-
 validate_key(Key) :-
   atom_length(Key, L),
   ( L \= 4 ->
-    writeln("Invalid Key."),
+    writeln("Invalid. Key length should be 4."),
     fail
     ; L is 4
+  ).
+
+validate_key_de(Key_matrix) :-
+  ( cal_determinant(Key_matrix, _) ->
+    writeln("ok")
+    ; writeln("This key cannot be deciphered. Please choose another one."),
+      abort()
   ).
 
 % eg: input String: "abcde"
@@ -103,24 +114,11 @@ hill_encipher_list(Key_matrix, [Pl_head | Pl_tail], [Ci_head | Ci_tail]) :-
 hill_encipher(Key, Plain_text_list, Ciphered_text_list) :-
   validate_key(Key),
   convert_to_matrix(Key, Key_matrix),
+  validate_key_de(Key_matrix),
   hill_encipher_list(Key_matrix, Plain_text_list, Ciphered_text_list).
 
 
-% -- not in use
-% hill_encipher("abcd", "abcdefg", E).
-% E = "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M"
-
-% hill_decipher("abcd", "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M", P).
-% P = "abcdefg"
-% --
-
-% in use
-% hill_encipher("hill", ["algo", "ogla"], E).
-% E = ["KRYM", "QMZR"].
-
-% hill_decipher("hill", ["KRYM", "QMZR"], P).
-% P = ["ALGO", "OGLA"].
-
+% --- Decipher (knows the key) ---
 choose_Deter(D) :- member(D, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]).
 
 extract_elements(Key_matrix, A, B, C, D) :-
@@ -139,7 +137,7 @@ mod_ele(A, B, C, D, F, S, T, L) :-
 
 cal_determinant(Key_matrix, Deter) :-
   extract_elements(Key_matrix, A, B, C, D),
-  M is mod(A * C - B * D, 26),
+  M is mod(A * D - B * C, 26),
   choose_Deter(N),
   Deter is rdiv(26 * N + 1, M),
   integer(Deter).
@@ -178,3 +176,62 @@ hill_decipher(Key, Ciphered_text_list, Plain_text_list) :-
   convert_to_matrix(Key, Key_matrix),
   inverse_matrix(Key_matrix, Inverse_matrix),
   hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list).
+
+
+% --- Decipher (use the Hint) ---
+cal_determinant_org(Matrix, Deter) :-
+  extract_elements(Matrix, A, B, C, D),
+  Deter is rdiv(1, mod(A * D - B * C, 26)).
+
+inverse_matrix_org(Matrix, Inversed) :-
+  adj_matrix(Matrix, Adj_matrix),
+  cal_determinant_org(Matrix, Deter),
+  get_inverse(Deter, Adj_matrix, Inversed).
+
+% pre-condition: M0 and M1 are 2 * 2 matrix
+matrix_multi(M0, [M1H0 | [M1H1 | _]], Result_matrix) :-
+  nth0(0, M1H0, Fst),
+  nth0(0, M1H1, Trd),
+  append([Fst, Trd], [], M2),
+  encipher_text(M0, M2, [F | [T | _]]),
+
+  nth0(1, M1H0, Snd),
+  nth0(1, M1H1, Last),
+  append([Snd, Last], [], M3),
+  encipher_text(M0, M3, [S | [L | _]]),
+
+  mod_ele(F, S, T, L, F1, S1, T1, L1),
+  append([[F1, S1]], [], R0),
+  append(R0, [[T1, L1]], Result_matrix).
+
+rotate_matrix(Matrix, Rotated) :-
+  extract_elements(Matrix, F, S, T, L),
+  append([[F, T]], [], R0),
+  append(R0, [[S, L]], Rotated).
+
+cal_key(Hint, Ciphered_text, Key_matrix) :-
+  convert_to_matrix(Hint, Hint_matrix_0),
+  rotate_matrix(Hint_matrix_0, Hint_matrix),
+  convert_to_matrix(Ciphered_text, Ciphered_matrix_0),
+  rotate_matrix(Ciphered_matrix_0, Ciphered_matrix),
+  inverse_matrix_org(Ciphered_matrix, Inversed),
+  matrix_multi(Hint_matrix, Inversed, Key_matrix).
+
+
+% -- not in use
+% hill_encipher("abcd", "abcdefg", E).
+% E = "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M"
+
+% hill_decipher("abcd", "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M", P).
+% P = "abcdefg"
+% --
+
+% in use
+% hill_encipher("hill", ["algo", "ogla"], E).
+% E = ["KRYM", "QMZR"].
+
+% hill_decipher("hill", ["KRYM", "QMZR"], P).
+% P = ["ALGO", "OGLA"].
+
+% hill_encipher("dytu", ["fthe"], E).
+% not able to decipher, should ask users to try another key
