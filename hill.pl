@@ -1,5 +1,8 @@
 % Hill Cipher
+% References:
 % http://practicalcryptography.com/ciphers/classical-era/hill/
+% http://crypto.interactive-maths.com/hill-cipher.html
+% http://practicalcryptography.com/cryptanalysis/stochastic-searching/cryptanalysis-hill-cipher/
 
 % --- Encipher ---
 % make the length of Num_list an even number for matrix multiplication
@@ -173,6 +176,46 @@ hill_decipher(Key, Ciphered_text_list, Plain_text_list) :-
   convert_to_matrix(Key, Key_matrix),
   inverse_matrix(Key_matrix, Inverse_matrix),
   hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list).
+
+
+% --- Decipher (use the Hint) ---
+cal_determinant_org(Matrix, Deter) :-
+  extract_elements(Matrix, A, B, C, D),
+  Deter is rdiv(1, mod(A * D - B * C, 26)).
+
+inverse_matrix_org(Matrix, Inversed) :-
+  adj_matrix(Matrix, Adj_matrix),
+  cal_determinant_org(Matrix, Deter),
+  get_inverse(Deter, Adj_matrix, Inversed).
+
+% pre-condition: M0 and M1 are 2 * 2 matrix
+matrix_multi(M0, [M1H0 | [M1H1 | _]], Result_matrix) :-
+  nth0(0, M1H0, Fst),
+  nth0(0, M1H1, Trd),
+  append([Fst, Trd], [], M2),
+  encipher_text(M0, M2, [F | [T | _]]),
+
+  nth0(1, M1H0, Snd),
+  nth0(1, M1H1, Last),
+  append([Snd, Last], [], M3),
+  encipher_text(M0, M3, [S | [L | _]]),
+
+  mod_ele(F, S, T, L, F1, S1, T1, L1),
+  append([[F1, S1]], [], R0),
+  append(R0, [[T1, L1]], Result_matrix).
+
+rotate_matrix(Matrix, Rotated) :-
+  extract_elements(Matrix, F, S, T, L),
+  append([[F, T]], [], R0),
+  append(R0, [[S, L]], Rotated).
+
+cal_key(Hint, Ciphered_text, Key_matrix) :-
+  convert_to_matrix(Hint, Hint_matrix_0),
+  rotate_matrix(Hint_matrix_0, Hint_matrix),
+  convert_to_matrix(Ciphered_text, Ciphered_matrix_0),
+  rotate_matrix(Ciphered_matrix_0, Ciphered_matrix),
+  inverse_matrix_org(Ciphered_matrix, Inversed),
+  matrix_multi(Hint_matrix, Inversed, Key_matrix).
 
 
 % -- not in use
