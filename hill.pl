@@ -1,6 +1,7 @@
 % Hill Cipher
 % http://practicalcryptography.com/ciphers/classical-era/hill/
 
+% --- Encipher ---
 % make the length of Num_list an even number for matrix multiplication
 even_list(Num_list, Even_list) :-
   length(Num_list, L),
@@ -36,9 +37,16 @@ map_to_num([Chead | CTail], [Nhead | Ntail]) :-
 validate_key(Key) :-
   atom_length(Key, L),
   ( L \= 4 ->
-    writeln("Invalid Key."),
+    writeln("Invalid. Key length should be 4."),
     fail
     ; L is 4
+  ).
+
+validate_key_de(Key_matrix) :-
+  ( cal_determinant(Key_matrix, _) ->
+    writeln("ok")
+    ; writeln("This key cannot be deciphered. Please choose another one."),
+      abort()
   ).
 
 % eg: input String: "abcde"
@@ -103,27 +111,11 @@ hill_encipher_list(Key_matrix, [Pl_head | Pl_tail], [Ci_head | Ci_tail]) :-
 hill_encipher(Key, Plain_text_list, Ciphered_text_list) :-
   validate_key(Key),
   convert_to_matrix(Key, Key_matrix),
+  validate_key_de(Key_matrix),
   hill_encipher_list(Key_matrix, Plain_text_list, Ciphered_text_list).
 
 
-% -- not in use
-% hill_encipher("abcd", "abcdefg", E).
-% E = "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M"
-
-% hill_decipher("abcd", "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M", P).
-% P = "abcdefg"
-% --
-
-% in use
-% hill_encipher("hill", ["algo", "ogla"], E).
-% E = ["KRYM", "QMZR"].
-
-% hill_decipher("hill", ["KRYM", "QMZR"], P).
-% P = ["ALGO", "OGLA"].
-
-% hill_encipher("dytu", ["fthe"], E).
-% not able to decipher, should ask users to try another key
-
+% --- Decipher (knows the key) ---
 choose_Deter(D) :- member(D, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]).
 
 extract_elements(Key_matrix, A, B, C, D) :-
@@ -181,3 +173,22 @@ hill_decipher(Key, Ciphered_text_list, Plain_text_list) :-
   convert_to_matrix(Key, Key_matrix),
   inverse_matrix(Key_matrix, Inverse_matrix),
   hill_encipher_list(Inverse_matrix, Ciphered_text_list, Plain_text_list).
+
+
+% -- not in use
+% hill_encipher("abcd", "abcdefg", E).
+% E = "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M"
+
+% hill_decipher("abcd", "\000\B\000\D\000\D\000\N\000\F\000\X\001\A\003\M", P).
+% P = "abcdefg"
+% --
+
+% in use
+% hill_encipher("hill", ["algo", "ogla"], E).
+% E = ["KRYM", "QMZR"].
+
+% hill_decipher("hill", ["KRYM", "QMZR"], P).
+% P = ["ALGO", "OGLA"].
+
+% hill_encipher("dytu", ["fthe"], E).
+% not able to decipher, should ask users to try another key
