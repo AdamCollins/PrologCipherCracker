@@ -232,20 +232,27 @@ cal_key(Hint, Ciphered_text, Key_matrix) :-
 search_keys(_, [], []).
 search_keys(Hint, [CiH | CiT], [Kh | Kt]) :-
   cal_key(Hint, CiH, Key_matrix),
-  convert_to_ciphered_text(Key_matrix, Chars),
-  atomics_to_string(Chars, Kh),
+  ( Key_matrix == 0 ->
+    Kh is 0
+    ; convert_to_ciphered_text(Key_matrix, Chars),
+      atomics_to_string(Chars, Kh)
+  ),
   search_keys(Hint, CiT, Kt).
 
 try_decipher([], _).
 try_decipher([KlH | KlT], Ciphered_text) :-
-  format("Decipher using key: ~w~n", [KlH]),
-  hill_decipher(KlH, Ciphered_text, Plain_text),
-  format("Result: ~w~n", [Plain_text]),
+  ( KlH == 0 ->
+    writeln("Cannot find a key. Next")
+    ; format("Decipher using key: ~w~n", [KlH]),
+      hill_decipher(KlH, Ciphered_text, Plain_text),
+      format("Result: ~w~n", [Plain_text])
+  ),
   try_decipher(KlT, Ciphered_text).
 
 hill_decipher_hint(Hint, Ciphered_text) :-
   search_keys(Hint, Ciphered_text, Keylist),
   try_decipher(Keylist, Ciphered_text).
+
 
 % -- not in use
 % hill_encipher("abcd", "abcdefg", E).
@@ -292,5 +299,18 @@ hill_decipher_hint(Hint, Ciphered_text) :-
 % Not able to decipher with key: NIKO
 % Result: 0
 % true .
-
 % Also works with Hint being apple, pear
+
+% cannot find a key
+% ?- hill_encipher("hill", ["sort", "math", "game", "tire", "seek"], R).
+% ok
+% R = ["EOLG", "GCHA", "QOMU", "PLVX", "CIEY"] .
+
+% ?- hill_decipher_hint("tire", ["EOLG", "GCHA", "QOMU", "PLVX", "CIEY"]).
+% hill_decipher_hint("sort", ["EOLG"]).
+% Cannot find a key. Next
+
+
+% keys for demo: "xrvc", "hand", "hill", "rand", "kznd" ...
+% ?- hill_encipher("xrvc", ["first", "apple", "pear", "thhe", "abcd", "night", "tuesday", "prolog", "functional", "programming"], Ciphered),
+% |    hill_decipher_hint("pear", Ciphered).
